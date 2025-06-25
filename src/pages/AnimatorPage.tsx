@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
 
 // Custom Components
 import Header from '@/components/layout/Header';
@@ -14,6 +15,43 @@ import { Slider } from '@/components/ui/slider';
 
 const AnimatorPage = () => {
   console.log('AnimatorPage loaded');
+
+  // Framer Motion Variants
+  const pageContainerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+        delayChildren: 0.4, // Delay to let header animate in
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 15,
+        duration: 0.5,
+      },
+    },
+  };
+
+  const controlsContainerVariants = {
+    hidden: { opacity: 1 }, // Keep card visible
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
 
   // State for animation properties
   const [dot1Color, setDot1Color] = useState('#f43f5e'); // rose-500
@@ -52,40 +90,7 @@ const AnimatorPage = () => {
   height: ${size * 2}px;
   position: relative;
   /* This links the animation to the SVG filter in your HTML */
-  filter: url(#gooey);
-}
-
-.gooey-dot {
-  width: ${size}px;
-  height: ${size}px;
-  border-radius: 50%;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  animation: gooey-move ${animationDuration} ease-in-out infinite;
-}
-
-.dot-1 {
-  background-color: ${dot1Color};
-  animation-delay: 0s;
-}
-
-.dot-2 {
-  background-color: ${dot2Color};
-  animation-delay: ${(speed * 0.33).toFixed(2)}s;
-}
-
-.dot-3 {
-  background-color: ${dot3Color};
-  animation-delay: ${(speed * 0.66).toFixed(2)}s;
-}
-
-@keyframes gooey-move {
-  0%   { transform: translate(calc(-50% - ${translationDistance}px), -50%); }
-  50%  { transform: translate(calc(-50% + ${translationDistance}px), -50%); }
-  100% { transform: translate(calc(-50% - ${translationDistance}px), -50%); }
-}`;
+  filter: url(#gooey);\n}\n\n.gooey-dot {\n  width: ${size}px;\n  height: ${size}px;\n  border-radius: 50%;\n  position: absolute;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%);\n  animation: gooey-move ${animationDuration} ease-in-out infinite;\n}\n\n.dot-1 {\n  background-color: ${dot1Color};\n  animation-delay: 0s;\n}\n\n.dot-2 {\n  background-color: ${dot2Color};\n  animation-delay: ${(speed * 0.33).toFixed(2)}s;\n}\n\n.dot-3 {\n  background-color: ${dot3Color};\n  animation-delay: ${(speed * 0.66).toFixed(2)}s;\n}\n\n@keyframes gooey-move {\n  0%   { transform: translate(calc(-50% - ${translationDistance}px), -50%); }\n  50%  { transform: translate(calc(-50% + ${translationDistance}px), -50%); }\n  100% { transform: translate(calc(-50% - ${translationDistance}px), -50%); }\n}`;
 
     return { htmlCode: html, cssCode: css };
   }, [size, speed, dot1Color, dot2Color, dot3Color]);
@@ -93,8 +98,13 @@ const AnimatorPage = () => {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
-      <main className="flex-1 container mx-auto py-8 px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+      <motion.main 
+        className="flex-1 container mx-auto py-8 px-4"
+        variants={pageContainerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           {/* Live Preview Section */}
           <div className="lg:col-span-2">
             <AnimationPreview
@@ -115,8 +125,13 @@ const AnimatorPage = () => {
                   Adjust the settings below to see live changes.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
+              <motion.div 
+                variants={controlsContainerVariants} 
+                initial="hidden" 
+                animate="visible" 
+                className="space-y-6 p-6 pt-0" // Using p-6 to match CardContent
+              >
+                <motion.div variants={itemVariants} className="space-y-2">
                   <Label htmlFor="size-slider">Dot Size: {size}px</Label>
                   <Slider
                     id="size-slider"
@@ -126,8 +141,8 @@ const AnimatorPage = () => {
                     max={80}
                     step={1}
                   />
-                </div>
-                <div className="space-y-2">
+                </motion.div>
+                <motion.div variants={itemVariants} className="space-y-2">
                   <Label htmlFor="speed-slider">Animation Speed: {speed.toFixed(1)}s</Label>
                   <Slider
                     id="speed-slider"
@@ -137,8 +152,8 @@ const AnimatorPage = () => {
                     max={10}
                     step={0.1}
                   />
-                </div>
-                <div className="space-y-4 pt-2">
+                </motion.div>
+                <motion.div variants={itemVariants} className="space-y-4 pt-2">
                   <ColorPickerInput
                     label="Dot 1 Color"
                     color={dot1Color}
@@ -154,15 +169,17 @@ const AnimatorPage = () => {
                     color={dot3Color}
                     onChange={setDot3Color}
                   />
-                </div>
-              </CardContent>
+                </motion.div>
+              </motion.div>
             </Card>
           </div>
-        </div>
+        </motion.div>
 
         {/* Code Output Section */}
-        <CodeOutput htmlCode={htmlCode} cssCode={cssCode} />
-      </main>
+        <motion.div variants={itemVariants}>
+            <CodeOutput htmlCode={htmlCode} cssCode={cssCode} />
+        </motion.div>
+      </motion.main>
       <Footer />
     </div>
   );
